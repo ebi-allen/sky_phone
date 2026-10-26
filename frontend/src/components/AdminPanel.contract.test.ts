@@ -121,9 +121,9 @@ describe('standalone admin panel contracts', () => {
 
   it('uses a compact transparent shell with dedicated admin workspaces', () => {
     expect(source).toContain('background: transparent')
-    expect(source).toContain('--admin-unit: max(1px, 0.0925926vh)')
-    expect(source).toContain('width: min(76vw, calc(1220 * var(--admin-unit)))')
-    expect(source).toContain('height: min(74vh, calc(700 * var(--admin-unit)))')
+    expect(source).toContain(
+      '--admin-unit: calc(max(1px, 0.0925926vh) * var(--admin-scale, 1))',
+    )
     expect(source).toContain('--admin-row-hover: linear-gradient')
     expect(source).toContain('--admin-row-active: linear-gradient')
     expect(source).toContain('background: var(--admin-nav-active)')
