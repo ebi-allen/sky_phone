@@ -44,6 +44,22 @@ describe('radio HUD roster contract', () => {
     expect(client.indexOf('local function send_hud_members()')).toBeLessThan(
       client.indexOf('sky_phone:configurator:updated'),
     )
-    expect(client).toContain('send_hud_config()\n    send_hud_members()')
+    expect(client.indexOf('local function request(')).toBeLessThan(
+      client.indexOf('sky_phone:configurator:updated'),
+    )
+    const handler = client.slice(
+      client.indexOf('sky_phone:configurator:updated'),
+    )
+    expect(handler.indexOf('send_hud_config()')).toBeLessThan(
+      handler.indexOf('set_hud_members(1, result.data.members)'),
+    )
+    expect(client).toContain('pending_members[frequency] = data.members')
+    expect(client).toContain('flush_pending_members()')
+    expect(client).toContain('pma-voice:radioActive')
+    expect(client).toContain('pma-voice:setTalkingOnRadio')
+    expect(client).toContain('GetProvider() ~= "pma"')
+    expect(client).toContain('SaltyChat_RadioChannelSender:')
+    expect(client).toContain('tonumber(sender.ServerId)')
+    expect(client).toContain('changed_key ~= key')
   })
 })

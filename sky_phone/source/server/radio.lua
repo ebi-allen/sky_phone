@@ -333,6 +333,10 @@ Bridge.Callbacks.Register("sky_phone:radio:get", function(source)
         return { success = false, error = "player_unavailable" }
     end
     local channel = channels[source]
+    local secondary_members = {}
+    if channel and (tonumber(channel.secondary) or 0) > 0 then
+        secondary_members = get_members(channel.secondary)
+    end
     return {
         success = true,
         data = {
@@ -340,6 +344,7 @@ Bridge.Callbacks.Register("sky_phone:radio:get", function(source)
             frequency = channel and channel.primary or 0,
             secondaryFrequency = channel and channel.secondary or 0,
             members = channel and get_members(channel.primary) or {},
+            secondaryMembers = secondary_members,
             history = profile.history,
             settings = profile.settings,
             badge = profile.badge,

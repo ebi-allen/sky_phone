@@ -1,25 +1,45 @@
 local function fixture()
     local e = setmetatable({}, { __index = _G })
-    local state = { nui = {}, net = {}, events = {}, messages = {}, joined = 0, left = 0, blocked = nil }
+    local state = {
+        nui = {}, net = {}, events = {}, messages = {}, state_handlers = {}, global_state = {},
+        joined = 0, left = 0, blocked = nil,
+    }
     e.Config = { Radio = { AutoRejoin = false, Notifications = false, DefaultVolume = 50 } }
     e.Bridge = { Debug = function() end, Radio = {}, Callbacks = {}, PlayerState = {} }
     e.Bridge.PlayerState.GetBlockReason = function() return state.blocked end
     local radio = e.Bridge.Radio
     radio.SupportsSecondary = function() return true end
     radio.SupportsSpeaker = function() return false end
-    radio.GetProvider = function() return "yaca" end
+    radio.GetProvider = function() return state.provider or "yaca" end
     radio.GetSpeaker = function() return false end
     radio.Join = function() state.joined = state.joined + 1; if state.on_join then state.on_join() end; return true end
     radio.Leave = function() state.left = state.left + 1 end
     radio.SetVolume = function() end
     e.Bridge.Callbacks.Trigger = function(name)
         if state.on_request then state.on_request(name) end
+        if state.reply then return state.reply(name) end
         return { success = true, data = { frequency = 150, secondaryFrequency = 160, connected = true } }
     end
     e.RegisterNUICallback = function(name, fn) state.nui[name] = fn end
     e.RegisterNetEvent = function(name, fn) state.net[name] = fn end
     e.AddEventHandler = function(name, fn) state.events[name] = fn end
     e.SendNUIMessage = function(message) state.messages[#state.messages + 1] = message end
+    e.PlayerId = function() return 1 end
+    e.GetPlayerServerId = function() return state.server_id or 1 end
+    e.GlobalState = state.global_state
+    e.AddStateBagChangeHandler = function(key, _, fn)
+        local cookie = { key = key, fn = fn }
+        state.state_handlers[#state.state_handlers + 1] = cookie
+        return cookie
+    end
+    e.RemoveStateBagChangeHandler = function(cookie)
+        for index, existing in ipairs(state.state_handlers) do
+            if existing == cookie then
+                table.remove(state.state_handlers, index)
+                return
+            end
+        end
+    end
     e.SetTimeout = function() end
     assert(loadfile("sky_phone/source/client/radio.lua", "t", e))()
     return state
@@ -72,6 +92,166 @@ y.net["yaca:external:setRadioFrequency"](1, "0")
 y.net["yaca:external:setRadioFrequency"](2, "0")
 assert(requests == 1, "Yaca leave confirmations must not start recursive disconnects")
 print("PASS Yaca: frequency echoes are idempotent during join, after approval and after forced leave")
+
+local function hud_has_member(state, id)
+    for index = #state.messages, 1, -1 do
+        local message = state.messages[index]
+        if message.type == "radio:hud-update" and type(message.data) == "table" then
+            for _, member in ipairs(message.data.members or {}) do
+                if member.id == id then return true end
+            end
+            return false
+        end
+    end
+    return false
+end
+
+local early = fixture()
+early.on_request = function(name)
+    if name == "sky_phone:radio:connect" then
+        early.net["sky_phone:radio:members"]({
+            frequency = 150,
+            members = { { id = 7, name = "Unit 7", badge = "" } },
+        })
+    end
+end
+assert(connect(early).success)
+assert(hud_has_member(early, 7), "Roster sent before the joined frequency is stored must still reach the HUD")
+
+local seeded = fixture()
+seeded.reply = function()
+    return {
+        success = true,
+        data = {
+            frequency = 150,
+            secondaryFrequency = 0,
+            connected = true,
+            members = { { id = 8, name = "Unit 8", badge = "" } },
+        },
+    }
+end
+assert(connect(seeded).success)
+assert(hud_has_member(seeded, 8), "Connect result must seed the HUD roster")
+
+local refresh = fixture()
+assert(connect(refresh).success)
+assert(not hud_has_member(refresh, 9), "An empty join must not invent HUD members")
+refresh.reply = function(name)
+    if name == "sky_phone:radio:get" then
+        return {
+            success = true,
+            data = {
+                frequency = 150,
+                secondaryFrequency = 160,
+                members = { { id = 9, name = "Unit 9", badge = "9" } },
+                secondaryMembers = { { id = 10, name = "Unit 10", badge = "" } },
+            },
+        }
+    end
+    return { success = true, data = { frequency = 150, secondaryFrequency = 160, connected = true } }
+end
+refresh.events["sky_phone:configurator:updated"]()
+assert(hud_has_member(refresh, 9), "Saving the configurator while connected must reload the primary roster")
+assert(hud_has_member(refresh, 10), "Saving the configurator while connected must reload the secondary roster")
+print("PASS radio HUD: early member events, connect payload and configurator refresh")
+
+local function hud_member(state, id)
+    for index = #state.messages, 1, -1 do
+        local message = state.messages[index]
+        if message.type == "radio:hud-update" and type(message.data) == "table" then
+            for _, member in ipairs(message.data.members or {}) do
+                if member.id == id then return member end
+            end
+            return nil
+        end
+    end
+end
+
+local function connected_members(state, members)
+    state.reply = function()
+        return {
+            success = true,
+            data = {
+                frequency = 150,
+                secondaryFrequency = 0,
+                connected = true,
+                members = members,
+            },
+        }
+    end
+    assert(connect(state).success)
+end
+
+local ignored = fixture()
+connected_members(ignored, { { id = 1, name = "Unit 1", badge = "" } })
+ignored.events["pma-voice:radioActive"](true)
+assert(hud_member(ignored, 1).talking == false, "Yaca must ignore PMA radio talk")
+
+local pma = fixture()
+pma.provider = "pma"
+pma.server_id = 1
+connected_members(pma, {
+    { id = 1, name = "Unit 1", badge = "" },
+    { id = 2, name = "Unit 2", badge = "" },
+})
+pma.events["pma-voice:radioActive"](true)
+assert(hud_member(pma, 1).talking == true, "Local PMA radio talk must highlight the speaker")
+pma.net["pma-voice:setTalkingOnRadio"](2, true)
+assert(hud_member(pma, 2).talking == true, "Another player's PMA radio talk must highlight that speaker")
+assert(hud_member(pma, 1).talking == true, "Local highlight must remain while another member talks")
+pma.events["pma-voice:radioActive"](false)
+assert(hud_member(pma, 1).talking == false, "Releasing the PMA radio key must clear the local highlight")
+assert(hud_member(pma, 2).talking == true)
+pma.net["pma-voice:setTalkingOnRadio"](2, false)
+assert(hud_member(pma, 2).talking == false, "PMA radio release must clear the other speaker")
+print("PASS radio HUD: PMA radio talk highlights the local player and other members")
+
+local function state_handler(state, key)
+    for _, handler in ipairs(state.state_handlers) do
+        if handler.key == key then return handler end
+    end
+end
+
+local salty = fixture()
+salty.provider = "saltychat"
+connected_members(salty, {
+    { id = 1, name = "Unit 1", badge = "" },
+    { id = 2, name = "Unit 2", badge = "" },
+})
+local primary = state_handler(salty, "SaltyChat_RadioChannelSender:150")
+assert(primary and #salty.state_handlers == 1, "SaltyChat must watch only the joined primary channel")
+primary.fn("global", "SaltyChat_RadioChannelSender:1500", { { ServerId = 1 } })
+assert(hud_member(salty, 1).talking == false, "A longer channel name must not match the sender bag")
+primary.fn("global", primary.key, { { ServerId = 1 }, { ServerId = 2 } })
+assert(hud_member(salty, 1).talking == true and hud_member(salty, 1).channel == 1)
+assert(hud_member(salty, 2).talking == true, "Every SaltyChat sender in the bag must be highlighted")
+primary.fn("global", primary.key, { { ServerId = 2 } })
+assert(hud_member(salty, 1).talking == false, "Leaving the SaltyChat sender list must clear that highlight")
+assert(hud_member(salty, 2).talking == true)
+salty.nui["radio:disconnect"]({}, function() end)
+assert(#salty.state_handlers == 0, "Leaving the radio must stop watching SaltyChat sender bags")
+
+local salty_secondary = fixture()
+salty_secondary.provider = "saltychat"
+salty_secondary.reply = function()
+    return {
+        success = true,
+        data = {
+            frequency = 150,
+            secondaryFrequency = 160,
+            connected = true,
+            members = {
+                { id = 4, name = "Unit 4", badge = "" },
+            },
+        },
+    }
+end
+assert(connect(salty_secondary).success)
+local secondary = state_handler(salty_secondary, "SaltyChat_RadioChannelSender:160")
+assert(secondary, "SaltyChat must watch the secondary channel separately")
+secondary.fn("global", secondary.key, { { ServerId = 4 } })
+assert(hud_member(salty_secondary, 4).talking == true and hud_member(salty_secondary, 4).channel == 2)
+print("PASS radio HUD: SaltyChat sender bags highlight primary and secondary transmitters")
 
 -- Public YACA v3.4.0 exports: apps/yaca-client/src/yaca/radio.ts.
 -- The volume export takes (channel, volume); selecting the same secondary channel toggles it off.
