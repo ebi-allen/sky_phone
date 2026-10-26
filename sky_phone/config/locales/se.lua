@@ -902,6 +902,9 @@ Locales["se"] = {
                     phoneBlockWhenDead = "Aktiverat som standard. Blockerar telefonen och avslutar samtal, sändningar och båda radiofrekvenserna vid död, medvetslöshet eller laststand. Använder ESX/Qbox/QBCore-status och inbyggda dödskontroller.",
                     phoneBlockWhenCuffed = "Aktiverat som standard. Blockerar telefonen och avslutar samtal, sändningar och radio vid handfängsel. Använder ramverkets status och inbyggda handfängselkontroller.",
                     radioRequirePhoneItem = "Aktiverat som standard. Kräver Phone.Item vid anslutning eller automatisk återanslutning till radion. Endast anslutna radioanvändare kontrolleras en gång per sekund; om den sista telefonen försvinner kopplas båda frekvenserna från även när telefonen är stängd. Avaktivera för att tillåta radio utan telefon.",
+                    radioHudAlwaysShowMembers = "Av visar bara medlemmar som talar och behåller dem sedan under kvarhållningstiden. På behåller varje ansluten medlem tills den lämnar kanalen. Talande medlemmar förblir markerade, och kvarhållningstiden döljer dem inte. Överlägget förblir dolt när HUD är avstängd.",
+                    radioHudPrimaryTalkColor = "Färg medan en medlem talar på huvudfrekvensen. Ange #RRGGBB. Medlemmar som inte talar förblir ljusgrå.",
+                    radioHudSecondaryTalkColor = "Färg medan en medlem talar på den sekundära frekvensen. Ange #RRGGBB. Medlemmar som inte talar förblir ljusgrå.",
                 },
                 table = {
                     list = "Lista",
@@ -1005,6 +1008,11 @@ Locales["se"] = {
                     BlockWhenDead = "Blockera vid död eller medvetslöshet",
                     BlockWhenCuffed = "Blockera vid handfängsel",
                     RequirePhoneItem = "Kräv en telefon för radion",
+                },
+                radioHudLabels = {
+                    AlwaysShowMembers = "Visa alltid kanalmedlemmar",
+                    PrimaryTalkColor = "Talfärg för huvudfrekvensen",
+                    SecondaryTalkColor = "Talfärg för den sekundära frekvensen",
                 },
             },
             players = {

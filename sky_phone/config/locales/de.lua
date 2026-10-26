@@ -902,6 +902,9 @@ Locales["de"] = {
                     phoneBlockWhenDead = "Standardmäßig aktiv. Sperrt das Telefon und beendet Anrufe, Livestreams und beide Funkfrequenzen bei Tod, Bewusstlosigkeit oder Laststand. Nutzt den ESX/Qbox/QBCore-Status und native Todesprüfungen. Deaktivieren erlaubt die Nutzung in diesen Zuständen.",
                     phoneBlockWhenCuffed = "Standardmäßig aktiv. Sperrt das Telefon und beendet Anrufe, Livestreams und Funk bei Handschellen. Nutzt den Framework-Status und native Handschellenprüfungen.",
                     radioRequirePhoneItem = "Standardmäßig aktiv. Benötigt Phone.Item beim Funkbeitritt und automatischen Wiederbeitritt. Nur verbundene Funkteilnehmer werden einmal pro Sekunde geprüft. Ohne das letzte Handy werden beide Frequenzen auch bei geschlossenem Handy getrennt. Deaktivieren erlaubt Funk ohne Handy-Item.",
+                    radioHudAlwaysShowMembers = "Aus zeigt nur sprechende Mitglieder und behält sie für die Nachlaufzeit. An behält jedes verbundene Mitglied, bis es den Kanal verlässt. Sprechende bleiben hervorgehoben, und die Nachlaufzeit blendet sie nicht aus. Bei ausgeschaltetem HUD bleibt die Einblendung verborgen.",
+                    radioHudPrimaryTalkColor = "Farbe, während ein Mitglied auf der Hauptfrequenz spricht. Eingabe als #RRGGBB. Mitglieder, die nicht sprechen, bleiben hellgrau.",
+                    radioHudSecondaryTalkColor = "Farbe, während ein Mitglied auf der Nebenfrequenz spricht. Eingabe als #RRGGBB. Mitglieder, die nicht sprechen, bleiben hellgrau.",
                 },
                 table = {
                     list = "Liste",
@@ -1005,6 +1008,11 @@ Locales["de"] = {
                     BlockWhenDead = "Bei Tod oder Bewusstlosigkeit sperren",
                     BlockWhenCuffed = "Bei Handschellen sperren",
                     RequirePhoneItem = "Handy-Item für Funk voraussetzen",
+                },
+                radioHudLabels = {
+                    AlwaysShowMembers = "Kanalmitglieder immer anzeigen",
+                    PrimaryTalkColor = "Sprechfarbe der Hauptfrequenz",
+                    SecondaryTalkColor = "Sprechfarbe der Nebenfrequenz",
                 },
             },
             players = {

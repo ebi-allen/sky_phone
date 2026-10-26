@@ -107,6 +107,10 @@ export function configuratorDescriptionKey(
   if (/^Phone\.DisabledControls(?:\[\d+\]|\.\d+)$/.test(path))
     return 'phoneDisabledControl'
   if (path === 'Radio.RequirePhoneItem') return 'radioRequirePhoneItem'
+  if (path === 'Radio.Hud.AlwaysShowMembers') return 'radioHudAlwaysShowMembers'
+  if (path === 'Radio.Hud.PrimaryTalkColor') return 'radioHudPrimaryTalkColor'
+  if (path === 'Radio.Hud.SecondaryTalkColor')
+    return 'radioHudSecondaryTalkColor'
   if (path === 'Calls.VoiceProvider') return 'callsVoiceProvider'
   if (path === 'Speaker.Enabled') return 'phoneSpeaker'
   if (path === 'Animations.WorldDisplayEnabled') return 'phoneWorldDisplay'

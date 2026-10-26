@@ -9,15 +9,25 @@ local auto_rejoin_pending = false
 local hud_members = { [1] = {}, [2] = {} }
 local hud_talking = {}
 
+local function hud_color(value, fallback)
+    if type(value) == "string" and value:match("^#%x%x%x%x%x%x$") then
+        return value
+    end
+    return fallback
+end
+
 local function get_hud_config()
     local hud = type(Config.Radio.Hud) == "table" and Config.Radio.Hud or {}
     local position = type(hud.Position) == "table" and hud.Position or {}
     return {
         enabled = hud.Enabled == true,
+        alwaysShowMembers = hud.AlwaysShowMembers == true,
         horizontal = position.Horizontal == "left" and "left" or "right",
         vertical = position.Vertical == "bottom" and "bottom" or "top",
         horizontalOffset = math.max(0.0, math.min(100.0, tonumber(position.HorizontalOffset) or 2.0)),
         verticalOffset = math.max(0.0, math.min(100.0, tonumber(position.VerticalOffset) or 30.0)),
+        primaryTalkColor = hud_color(hud.PrimaryTalkColor, "#4ade80"),
+        secondaryTalkColor = hud_color(hud.SecondaryTalkColor, "#facc15"),
         speakerPersistMilliseconds = math.max(
             0,
             math.min(10000, math.floor(tonumber(hud.SpeakerPersistMilliseconds) or 3000))
@@ -28,10 +38,6 @@ end
 local function send_hud_config()
     SendNUIMessage({ type = "radio:hud-config", data = get_hud_config() })
 end
-
-AddEventHandler("sky_phone:configurator:updated", function()
-    send_hud_config()
-end)
 
 local function send_hud_members()
     local combined = {}
@@ -59,6 +65,11 @@ local function send_hud_members()
     end)
     SendNUIMessage({ type = "radio:hud-update", data = { members = members } })
 end
+
+AddEventHandler("sky_phone:configurator:updated", function()
+    send_hud_config()
+    send_hud_members()
+end)
 
 local function clear_hud_members()
     hud_members = { [1] = {}, [2] = {} }

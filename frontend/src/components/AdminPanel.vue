@@ -508,6 +508,9 @@ const configuratorEditorLabels = computed<AdminConfigEditorLabels>(() => ({
       path,
       t(`configurator.playerRestrictionLabels.${path.split('.').at(-1)}`),
     ]),
+    ...['AlwaysShowMembers', 'PrimaryTalkColor', 'SecondaryTalkColor'].map(
+      (key) => [`Radio.Hud.${key}`, t(`configurator.radioHudLabels.${key}`)],
+    ),
     ['Realtime.ForceRelay', phone.t('Realtime.settings.ForceRelay')],
     ['Realtime.Transport', phone.t('Realtime.settings.Transport')],
     ['Realtime.MaxVideoEdge', phone.t('Realtime.settings.MaxVideoEdge')],

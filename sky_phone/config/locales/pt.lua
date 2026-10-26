@@ -902,6 +902,9 @@ Locales["pt"] = {
                     phoneBlockWhenDead = "Ativado por padrão. Bloqueia o telefone e encerra chamadas, transmissões e ambas as frequências de rádio em caso de morte, inconsciência ou laststand. Usa o estado ESX/Qbox/QBCore e verificações nativas de morte.",
                     phoneBlockWhenCuffed = "Ativado por padrão. Bloqueia o telefone e encerra chamadas, transmissões e rádio enquanto o jogador está algemado. Usa o estado do framework e verificações nativas de algemas.",
                     radioRequirePhoneItem = "Ativado por padrão. Exige Phone.Item ao entrar ou voltar automaticamente ao rádio. Só verifica usuários conectados uma vez por segundo; perder o último celular desliga ambas as frequências, mesmo com o celular fechado. Desative para permitir rádio sem celular.",
+                    radioHudAlwaysShowMembers = "Desligado mostra apenas quem está falando e depois os mantém pelo tempo de permanência. Ligado mantém cada membro conectado até sair do canal. Quem fala continua destacado, e o tempo de permanência não os oculta. A sobreposição fica oculta quando o HUD está desligado.",
+                    radioHudPrimaryTalkColor = "Cor exibida enquanto um membro fala na frequência principal. Introduza #RRGGBB. Quem não fala permanece em cinza claro.",
+                    radioHudSecondaryTalkColor = "Cor exibida enquanto um membro fala na frequência secundária. Introduza #RRGGBB. Quem não fala permanece em cinza claro.",
                 },
                 table = {
                     list = "Lista",
@@ -1005,6 +1008,11 @@ Locales["pt"] = {
                     BlockWhenDead = "Bloquear quando morto ou inconsciente",
                     BlockWhenCuffed = "Bloquear quando algemado",
                     RequirePhoneItem = "Exigir um celular para o rádio",
+                },
+                radioHudLabels = {
+                    AlwaysShowMembers = "Mostrar sempre os membros do canal",
+                    PrimaryTalkColor = "Cor ao falar na frequência principal",
+                    SecondaryTalkColor = "Cor ao falar na frequência secundária",
                 },
             },
             players = {
