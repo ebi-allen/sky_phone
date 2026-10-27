@@ -92,6 +92,11 @@ import type { EasySharePayload } from '@/types/easyshare'
 import type { GifSearchResult, SmsAttachmentType } from '@/types/messages'
 import { parseDatabaseDate, type DatabaseDateValue } from '@/utils/date'
 import { handleEnterAction } from '@/utils/keyboard'
+import {
+  filterMailAddressInput,
+  MAIL_ADDRESS_INPUT_MAX_LENGTH,
+  normalizeMailAddress,
+} from '@/utils/mail'
 
 type FlareTab = 'discover' | 'explore' | 'likes' | 'matches' | 'profile'
 type ExploreMode = 'all' | 'dates' | 'friends' | 'longTerm'
@@ -138,6 +143,16 @@ const discoverySaving = ref(false)
 const signOutDialogOpened = ref(false)
 const deleteAccountDialogOpened = ref(false)
 const accountActionPending = ref(false)
+const signInEmail = ref(account.email)
+const signInPassword = ref('')
+const signInError = ref('')
+const signInPending = ref(false)
+const canSignIn = computed(
+  () =>
+    Boolean(normalizeMailAddress(signInEmail.value, phone.mailDomain)) &&
+    signInPassword.value.length >= 6 &&
+    signInPassword.value.length <= 64,
+)
 const unmatchDialog = ref(false)
 const activeExploreMode = ref<ExploreMode>('all')
 const actionToast = ref('')
@@ -685,6 +700,30 @@ async function signOut(): Promise<void> {
   flare.reset('not_authenticated')
 }
 
+async function signIn(): Promise<void> {
+  if (!canSignIn.value || signInPending.value) return
+  const email = normalizeMailAddress(signInEmail.value, phone.mailDomain)
+  if (!email) return
+
+  signInPending.value = true
+  signInError.value = ''
+  const response = await account.login(email, signInPassword.value)
+  signInPending.value = false
+  if (!response.success) {
+    const error = response.error ?? 'default'
+    signInError.value = phone.t(
+      `Common.appAuth.errors.${['invalid_email', 'invalid_password', 'invalid_credentials', 'rate_limited'].includes(error) ? error : 'default'}`,
+    )
+    return
+  }
+
+  signInPassword.value = ''
+  if (await flare.bootstrap()) {
+    syncDraft()
+    activeTab.value = 'discover'
+  } else showActionError()
+}
+
 async function deleteFlareAccount(): Promise<void> {
   if (accountActionPending.value) return
   accountActionPending.value = true
@@ -1001,11 +1040,46 @@ onBeforeUnmount(() => {
 
     <section
       v-else-if="flare.error === 'not_authenticated'"
-      class="flare-state"
+      class="flare-state flare-sign-in"
     >
       <span class="flare-mark"><Flame fill="currentColor" /></span>
       <h1>{{ phone.t('Apps.flare.signInTitle') }}</h1>
       <p>{{ phone.t('Apps.flare.signInBody') }}</p>
+      <form class="flare-sign-in-form" @submit.prevent="signIn">
+        <sky-list inset strong>
+          <sky-field
+            input-id="flare-sign-in-email"
+            :label="phone.t('Setup.cloud.email')"
+            :value="signInEmail"
+            :maxlength="MAIL_ADDRESS_INPUT_MAX_LENGTH"
+            autocomplete="username"
+            inputmode="email"
+            @input="signInEmail = filterMailAddressInput(eventValue($event))"
+          />
+          <sky-field
+            input-id="flare-sign-in-password"
+            :label="phone.t('Common.appAuth.password')"
+            :value="signInPassword"
+            type="password"
+            maxlength="64"
+            autocomplete="current-password"
+            @input="signInPassword = eventValue($event)"
+            @keydown.enter="handleEnterAction($event, signIn)"
+          />
+        </sky-list>
+        <p v-if="signInError" role="alert">{{ signInError }}</p>
+        <sky-button
+          type="submit"
+          large
+          rounded
+          :disabled="!canSignIn || signInPending"
+        >
+          <sky-spinner v-if="signInPending" />
+          <template v-else>{{
+            phone.t('Common.appAuth.loginAction')
+          }}</template>
+        </sky-button>
+      </form>
     </section>
 
     <template v-else-if="!flare.profile">
@@ -2351,6 +2425,22 @@ onBeforeUnmount(() => {
 .flare-state--compact {
   min-height: 240px;
 }
+.flare-sign-in {
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.flare-sign-in-form {
+  width: 100%;
+  display: grid;
+  gap: var(--sky-space-3);
+}
+.flare-sign-in-form :deep(.sky-list) {
+  margin: 0;
+  text-align: left;
+}
+.flare-sign-in-form p[role='alert'] {
+  color: var(--sky-danger);
+}
 .flare-state__icon {
   width: 58px;
   height: 58px;
@@ -3211,12 +3301,18 @@ onBeforeUnmount(() => {
   gap: var(--sky-space-2);
 }
 .flare-onboarding-photo-actions :deep(.sky-button) {
+  height: auto;
+  min-height: var(--sky-touch-target, 44px);
   min-width: 0;
-  padding-inline: var(--sky-space-2);
+  padding: var(--sky-space-2);
 }
 .flare-onboarding-photo-actions :deep(.sky-button span) {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.flare-onboarding-photo-actions :deep(.sky-button svg) {
+  flex-shrink: 0;
 }
 .flare-photo-required {
   margin: var(--sky-space-3) 0 0;
