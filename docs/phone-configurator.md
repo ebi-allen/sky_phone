@@ -4,6 +4,14 @@ For a first installation, also follow the [installation guide](../sky_phone/PHON
 This guide covers the administrator's `/phonepanel`; the Settings app on a player's
 phone changes that device's personal preferences, not the server-wide SIM or identity mode.
 
+Use **− / +** in the `/phonepanel` header to adjust its size from **80% to 160%**.
+Click the percentage to return to **100%**. The size applies immediately and is
+saved automatically on your device, including after closing or reopening the panel.
+It only affects your panel; it does not change another administrator's view, the
+handset size, or server configuration. Clearing the local NUI cache resets it.
+
+![Phonepanel at 160% with the size controls in the header](images/phone-panel-scale.png)
+
 Physical cell towers are optional and disabled by default. The Cell towers
 section exposes the prop toggle, lockpick item, allowed repair jobs, repair time,
 ground positions and headings. A damaged mast stops supplying coverage until
@@ -35,7 +43,7 @@ The build regenerates defaults from the source files.
 The server creates `sky_phone_configurator` automatically. No SQL migration is
 needed for the General page or the permission change. Save commits the shared
 draft through the existing revision and validation checks. A failed or conflicting
-save leaves the draft available to review. Nothing autosaves. Use the checkmark
+save leaves the draft available to review. Configuration edits never autosave. Use the checkmark
 in the panel header to save, and confirm success before closing.
 
 Framework/inventory/voice provider selection, identity mode changes and changed

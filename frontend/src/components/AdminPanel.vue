@@ -17,8 +17,10 @@ import {
   LoaderCircle,
   LockKeyhole,
   MessageSquare,
+  Minus,
   PhoneCall,
   PhoneForwarded,
+  Plus,
   Save,
   ScrollText,
   Search,
@@ -96,6 +98,39 @@ type PendingAction =
 const emit = defineEmits<{ close: [] }>()
 const admin = useAdminStore()
 const phone = usePhoneStore()
+const panelScaleKey = 'sky_phone_admin_panel_scale_v1'
+const panelScaleMin = 80
+const panelScaleMax = 160
+const panelScale = ref(loadPanelScale())
+
+function loadPanelScale(): number {
+  try {
+    const stored = window.localStorage.getItem(panelScaleKey)
+    if (stored === null) return 100
+    const value = Number(stored)
+    if (
+      Number.isFinite(value) &&
+      value >= panelScaleMin &&
+      value <= panelScaleMax
+    ) {
+      return Math.round(value / 10) * 10
+    }
+    console.warn('[sky_phone] Ignored invalid cached admin panel scale.')
+  } catch (error) {
+    console.warn('[sky_phone] Could not read cached admin panel scale.', error)
+  }
+  return 100
+}
+
+function setPanelScale(value: number): void {
+  panelScale.value = Math.min(panelScaleMax, Math.max(panelScaleMin, value))
+  try {
+    window.localStorage.setItem(panelScaleKey, String(panelScale.value))
+  } catch (error) {
+    console.warn('[sky_phone] Could not cache admin panel scale.', error)
+  }
+}
+
 const tab = ref<AdminTab>('overview')
 const playerQuery = ref('')
 const appQuery = ref('')
@@ -1057,7 +1092,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="admin-panel-overlay" role="dialog" :aria-label="t('name')">
+  <div
+    class="admin-panel-overlay"
+    :style="{ '--admin-scale': panelScale / 100 }"
+    role="dialog"
+    :aria-label="t('name')"
+  >
     <div class="admin-panel-window">
       <header class="admin-panel-header">
         <div class="admin-panel-brand">
@@ -1086,6 +1126,41 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="admin-panel-actions">
+          <div
+            class="admin-panel-scale"
+            role="group"
+            :aria-label="t('scale.label')"
+          >
+            <SkyButton
+              variant="plain"
+              icon-only
+              :aria-label="t('scale.smaller')"
+              :title="t('scale.smaller')"
+              :disabled="panelScale <= panelScaleMin"
+              @click="setPanelScale(panelScale - 10)"
+            >
+              <Minus :size="16" style="--admin-icon-size: 16" />
+            </SkyButton>
+            <SkyButton
+              variant="plain"
+              class="admin-panel-scale__reset"
+              :aria-label="t('scale.reset')"
+              :title="t('scale.hint')"
+              @click="setPanelScale(100)"
+            >
+              {{ panelScale }} %
+            </SkyButton>
+            <SkyButton
+              variant="plain"
+              icon-only
+              :aria-label="t('scale.larger')"
+              :title="t('scale.larger')"
+              :disabled="panelScale >= panelScaleMax"
+              @click="setPanelScale(panelScale + 10)"
+            >
+              <Plus :size="16" style="--admin-icon-size: 16" />
+            </SkyButton>
+          </div>
           <span v-if="hasChanges" class="admin-panel-dirty">
             <span></span>{{ t('editor.unsaved') }} · {{ pendingCount }}
           </span>
@@ -2742,8 +2817,8 @@ onBeforeUnmount(() => {
 }
 
 .admin-panel-overlay {
-  /* One design pixel at 1080p, proportional growth on taller displays. */
-  --admin-unit: max(1px, 0.0925926vh);
+  /* Preserve resolution scaling and apply this client's panel preference. */
+  --admin-unit: calc(max(1px, 0.0925926vh) * var(--admin-scale, 1));
   --admin-bg: #070908;
   --admin-panel: #0d0f0e;
   --admin-panel-raised: #131514;
@@ -2763,8 +2838,7 @@ onBeforeUnmount(() => {
   --admin-toggle-track: #393d39;
   --admin-toggle-thumb: #c7ccc7;
   --admin-toggle-thumb-checked: #f4f7f4;
-  --admin-field-columns: minmax(calc(220 * var(--admin-unit)), 0.9fr)
-    minmax(calc(210 * var(--admin-unit)), 1.1fr);
+  --admin-field-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   --admin-row-hover: linear-gradient(
     90deg,
     #1a1c1b 0%,
@@ -2797,8 +2871,16 @@ onBeforeUnmount(() => {
 }
 
 .admin-panel-window {
-  width: min(76vw, calc(1220 * var(--admin-unit)));
-  height: min(74vh, calc(700 * var(--admin-unit)));
+  width: min(
+    95vw,
+    calc(76vw * var(--admin-scale)),
+    calc(1220 * var(--admin-unit))
+  );
+  height: min(
+    94vh,
+    calc(74vh * var(--admin-scale)),
+    calc(700 * var(--admin-unit))
+  );
   overflow: hidden;
   border: calc(1 * var(--admin-unit)) solid rgba(255, 255, 255, 0.065);
   border-radius: calc(4 * var(--admin-unit));
@@ -2810,9 +2892,11 @@ onBeforeUnmount(() => {
 }
 
 .admin-panel-header {
-  height: calc(50 * var(--admin-unit));
+  height: max(50px, calc(50 * var(--admin-unit)));
   display: grid;
-  grid-template-columns: calc(320 * var(--admin-unit)) 1fr auto;
+  grid-template-columns:
+    minmax(0, calc(320 * var(--admin-unit))) minmax(0, 1fr)
+    auto;
   align-items: center;
   border-bottom: calc(1 * var(--admin-unit)) solid var(--admin-border);
   background: #0b0d0c;
@@ -2874,6 +2958,32 @@ onBeforeUnmount(() => {
 .admin-panel-actions {
   gap: calc(6 * var(--admin-unit));
   padding-right: calc(10 * var(--admin-unit));
+}
+
+.admin-panel-scale {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--admin-border-strong);
+  border-radius: calc(6 * var(--admin-unit));
+}
+
+.admin-panel-scale .sky-button {
+  min-width: 44px;
+  min-height: 44px;
+  height: max(44px, calc(40 * var(--admin-unit)));
+  padding: 0 calc(8 * var(--admin-unit));
+  color: #fff;
+  font-size: max(12px, calc(11 * var(--admin-unit)));
+}
+
+.admin-panel-scale__reset {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.admin-panel-scale .sky-button:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: -2px;
 }
 
 .admin-panel-dirty {
@@ -2959,7 +3069,7 @@ button:disabled {
 }
 
 .admin-panel-body {
-  height: calc(100% - calc(50 * var(--admin-unit)));
+  height: calc(100% - max(50px, calc(50 * var(--admin-unit))));
   display: grid;
   grid-template-columns:
     calc(50 * var(--admin-unit)) calc(270 * var(--admin-unit))
@@ -4793,7 +4903,9 @@ button:disabled {
   }
 
   .admin-panel-header {
-    grid-template-columns: calc(225 * var(--admin-unit)) 1fr auto;
+    grid-template-columns:
+      minmax(0, calc(225 * var(--admin-unit))) minmax(0, 1fr)
+      auto;
   }
 
   .admin-panel-stat-grid,

@@ -549,6 +549,13 @@ Locales["ja"] = {
             },
         },
         AdminPanel = {
+            scale = {
+                label = "パネルのサイズ",
+                smaller = "パネルを縮小",
+                larger = "パネルを拡大",
+                reset = "パネルのサイズを100%に戻す",
+                hint = "この端末に保存されます。クリックすると100%に戻ります。",
+            },
             social = {
                 title = "ソーシャルメディアのモデレーション",
                 body = "Feather、FlipTok、Picstagram、Weazel Newsの公開投稿を検索して削除します。削除はすべて管理監査に記録されます。",
