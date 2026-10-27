@@ -549,6 +549,13 @@ Locales["pl"] = {
             },
         },
         AdminPanel = {
+            scale = {
+                label = "Rozmiar panelu",
+                smaller = "Zmniejsz panel",
+                larger = "Powiększ panel",
+                reset = "Przywróć rozmiar panelu do 100%",
+                hint = "Zapisano na tym urządzeniu. Kliknij, aby przywrócić 100%.",
+            },
             social = {
                 title = "Social media moderation",
                 body = "Find and remove published posts from Feather, FlipTok, Picstagram and Weazel News. Every removal is recorded in the admin audit.",

@@ -46,6 +46,153 @@ async function openConfigurator(page, mode = 'dark', language = 'en') {
   await expect(page.locator('.admin-general-settings')).toBeVisible()
 }
 
+test('panel size stays local, survives reopening and reload, and preserves drafts', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await openConfigurator(page)
+  const larger = page.getByRole('button', { name: 'Make panel larger' })
+  const smaller = page.getByRole('button', { name: 'Make panel smaller' })
+  const reset = page.getByRole('button', { name: 'Reset panel size to 100%' })
+  const title = page
+    .locator('.admin-general-settings .sky-settings-row__title')
+    .first()
+  const initialSize = await title.evaluate((element) =>
+    parseFloat(getComputedStyle(element).fontSize),
+  )
+  let saves = 0
+  page.on('request', (request) => {
+    if (request.url().includes('admin:save-configurator')) saves += 1
+  })
+
+  await larger.focus()
+  await page.keyboard.press('Enter')
+  await expect(reset).toHaveText('110 %')
+  for (let step = 0; step < 5; step += 1) await larger.click()
+  await expect(reset).toHaveText('160 %')
+  await expect(larger).toBeDisabled()
+  expect(
+    await title.evaluate((element) =>
+      parseFloat(getComputedStyle(element).fontSize),
+    ),
+  ).toBeCloseTo(initialSize * 1.6)
+  await expect(page.locator('.admin-panel-save')).toBeDisabled()
+  expect(
+    await page.evaluate(() =>
+      localStorage.getItem('sky_phone_admin_panel_scale_v1'),
+    ),
+  ).toBe('160')
+
+  await page.locator('.admin-panel-close').click()
+  await expect(page.locator('.admin-panel-window')).toHaveCount(0)
+  await page.evaluate(() => window.postMessage({ type: 'admin:open' }, '*'))
+  await expect(reset).toHaveText('160 %')
+  await openConfigurator(page)
+  await expect(reset).toHaveText('160 %')
+
+  const unique = page
+    .locator('[data-config-path="Phone.Unique"]')
+    .getByRole('switch')
+  await page.locator('[data-config-path="Phone.Unique"] .sky-toggle').click()
+  const draft = await unique.isChecked()
+  for (let step = 0; step < 8; step += 1) await smaller.click()
+  await expect(reset).toHaveText('80 %')
+  await expect(smaller).toBeDisabled()
+  await expect(unique).toBeChecked({ checked: draft })
+  await expect(page.locator('.admin-panel-save')).toBeEnabled()
+  await reset.click()
+  await expect(reset).toHaveText('100 %')
+  expect(saves).toBe(0)
+})
+
+for (const [width, height] of [
+  [1280, 720],
+  [1920, 1080],
+  [2560, 1440],
+]) {
+  test(`enlarged panel keeps configuration and controls inside ${width}x${height}`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height })
+    await page.addInitScript(() =>
+      localStorage.setItem('sky_phone_admin_panel_scale_v1', '160'),
+    )
+    await openConfigurator(page)
+    for (const selector of [
+      '.admin-panel-window',
+      '.admin-panel-header',
+      '.admin-general-settings',
+    ]) {
+      expect(
+        await page
+          .locator(selector)
+          .evaluate(
+            (element) => element.scrollWidth <= element.clientWidth + 1,
+          ),
+      ).toBe(true)
+    }
+    await page
+      .locator('.admin-panel-config-sections button')
+      .filter({ has: page.locator('strong', { hasText: /^Companies$/ }) })
+      .click()
+    const workspace = page.locator('.admin-panel-config-workspace')
+    await expect(workspace).toBeVisible()
+    expect(
+      await workspace.evaluate(
+        (element) => element.scrollWidth <= element.clientWidth + 1,
+      ),
+    ).toBe(true)
+    const closeBounds = await page.locator('.admin-panel-close').boundingBox()
+    expect(closeBounds.x + closeBounds.width).toBeLessThanOrEqual(width)
+    expect(closeBounds.y + closeBounds.height).toBeLessThanOrEqual(height)
+    for (const button of await page
+      .locator('.admin-panel-scale button')
+      .all()) {
+      const bounds = await button.boundingBox()
+      expect(bounds.width).toBeGreaterThanOrEqual(44)
+      expect(bounds.height).toBeGreaterThanOrEqual(44)
+    }
+    const jobs = page.locator('.admin-panel-config-field').filter({
+      has: page.locator('code', { hasText: /^Companies.Definitions$/ }),
+    })
+    await jobs.scrollIntoViewIfNeeded()
+    expect(
+      await jobs.evaluate(
+        (element) => element.scrollWidth <= element.clientWidth + 1,
+      ),
+    ).toBe(true)
+    const editor = jobs.locator('.config-structured-editor').first()
+    expect(
+      await editor.evaluate(
+        (element) => element.scrollWidth <= element.clientWidth + 1,
+      ),
+    ).toBe(true)
+    await page
+      .locator('.admin-panel-window')
+      .screenshot({ path: testInfo.outputPath('enlarged-panel.png') })
+  })
+}
+
+test('invalid or unavailable panel cache leaves size controls usable', async ({
+  page,
+}) => {
+  await page.addInitScript(() =>
+    localStorage.setItem('sky_phone_admin_panel_scale_v1', 'Infinity'),
+  )
+  await openConfigurator(page)
+  const reset = page.getByRole('button', { name: 'Reset panel size to 100%' })
+  await expect(reset).toHaveText('100 %')
+  await page.evaluate(() => {
+    Storage.prototype.setItem = () => {
+      throw new DOMException('Storage unavailable', 'QuotaExceededError')
+    }
+  })
+  await page.getByRole('button', { name: 'Make panel larger' }).click()
+  await expect(reset).toHaveText('110 %')
+  await page.locator('.admin-panel-close').click()
+  await expect(page.locator('.admin-panel-window')).toHaveCount(0)
+})
+
 for (const [mode, language, width, height] of [
   ['light', 'en', 1280, 800],
   ['dark', 'en', 1360, 860],

@@ -1480,8 +1480,8 @@ function mapEntryStructure(
 .config-structured-editor__property {
   display: grid;
   grid-template-columns:
-    calc(24 * var(--admin-unit)) minmax(calc(180 * var(--admin-unit)), 0.82fr)
-    minmax(calc(140 * var(--admin-unit)), 1.18fr) calc(27 * var(--admin-unit));
+    calc(24 * var(--admin-unit)) minmax(0, 0.82fr)
+    minmax(0, 1.18fr) calc(27 * var(--admin-unit));
   align-items: center;
   gap: calc(6 * var(--admin-unit));
   padding: calc(5 * var(--admin-unit)) calc(6 * var(--admin-unit));
@@ -1490,14 +1490,14 @@ function mapEntryStructure(
 
 .config-structured-editor__property {
   grid-template-columns:
-    calc(24 * var(--admin-unit)) minmax(calc(200 * var(--admin-unit)), 0.9fr)
-    minmax(calc(150 * var(--admin-unit)), 1.1fr) calc(27 * var(--admin-unit));
+    calc(24 * var(--admin-unit)) minmax(0, 0.9fr)
+    minmax(0, 1.1fr) calc(27 * var(--admin-unit));
 }
 
 .config-structured-editor__property.is-map {
   grid-template-columns:
-    calc(24 * var(--admin-unit)) minmax(calc(180 * var(--admin-unit)), 0.82fr)
-    minmax(calc(150 * var(--admin-unit)), 1.18fr) calc(27 * var(--admin-unit));
+    calc(24 * var(--admin-unit)) minmax(0, 0.82fr)
+    minmax(0, 1.18fr) calc(27 * var(--admin-unit));
 }
 
 .config-structured-editor__row.has-structured-value,
