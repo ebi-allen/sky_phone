@@ -909,6 +909,9 @@ Locales["es"] = {
                     phoneBlockWhenDead = "Activado por defecto. Bloquea el teléfono y finaliza llamadas, emisiones y ambas frecuencias de radio al morir, perder el conocimiento o entrar en laststand. Usa el estado de ESX/Qbox/QBCore y comprobaciones nativas de muerte.",
                     phoneBlockWhenCuffed = "Activado por defecto. Bloquea el teléfono y finaliza llamadas, emisiones y radio mientras estás esposado. Usa el estado del framework y comprobaciones nativas de esposas.",
                     radioRequirePhoneItem = "Activado por defecto. Requiere Phone.Item al conectar o reconectar la radio. Solo comprueba a los usuarios conectados una vez por segundo. Perder el último teléfono desconecta ambas frecuencias incluso con el teléfono cerrado. Desactivar permite radio sin teléfono.",
+                    radioHudAlwaysShowMembers = "Desactivado muestra solo a quienes hablan y luego los conserva durante el tiempo de permanencia. Activado conserva a cada miembro conectado hasta que abandona el canal. Quienes hablan siguen resaltados, y el tiempo de permanencia no los oculta. La superposición permanece oculta cuando el HUD está desactivado.",
+                    radioHudPrimaryTalkColor = "Color mientras un miembro habla en la frecuencia principal. Introduce #RRGGBB. Quienes no hablan permanecen en gris claro.",
+                    radioHudSecondaryTalkColor = "Color mientras un miembro habla en la frecuencia secundaria. Introduce #RRGGBB. Quienes no hablan permanecen en gris claro.",
                 },
                 table = {
                     list = "Lista",
@@ -1012,6 +1015,11 @@ Locales["es"] = {
                     BlockWhenDead = "Bloquear al morir o perder el conocimiento",
                     BlockWhenCuffed = "Bloquear con esposas",
                     RequirePhoneItem = "Exigir un teléfono para la radio",
+                },
+                radioHudLabels = {
+                    AlwaysShowMembers = "Mostrar siempre a los miembros del canal",
+                    PrimaryTalkColor = "Color al hablar en la frecuencia principal",
+                    SecondaryTalkColor = "Color al hablar en la frecuencia secundaria",
                 },
             },
             players = {

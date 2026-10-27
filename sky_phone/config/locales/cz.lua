@@ -909,6 +909,9 @@ Locales["cz"] = {
                     phoneBlockWhenDead = "Ve výchozím stavu zapnuto. Při smrti, bezvědomí nebo laststand blokuje telefon a ukončí hovory, vysílání a obě rádiové frekvence. Používá stav ESX/Qbox/QBCore a nativní kontrolu smrti.",
                     phoneBlockWhenCuffed = "Ve výchozím stavu zapnuto. V poutech blokuje telefon a ukončí hovory, vysílání a rádio. Používá stav frameworku a nativní kontrolu pout.",
                     radioRequirePhoneItem = "Ve výchozím stavu zapnuto. Vyžaduje Phone.Item při připojení nebo automatickém návratu do vysílačky. Kontroluje jen připojené uživatele jednou za sekundu; ztráta posledního telefonu odpojí obě frekvence i se zavřeným telefonem. Vypni pro povolení vysílačky bez telefonu.",
+                    radioHudAlwaysShowMembers = "Vypnuto ukazuje jen mluvící členy a potom je ponechá po dobu doznívání. Zapnuto ponechá každého připojeného člena, dokud neopustí kanál. Mluvící zůstávají zvýraznění a doba doznívání je neskrývá. Překryv zůstává skrytý, když je HUD vypnuté.",
+                    radioHudPrimaryTalkColor = "Barva, když člen mluví na hlavní frekvenci. Zadej #RRGGBB. Členové, kteří nemluví, zůstávají světle šedí.",
+                    radioHudSecondaryTalkColor = "Barva, když člen mluví na vedlejší frekvenci. Zadej #RRGGBB. Členové, kteří nemluví, zůstávají světle šedí.",
                 },
                 table = {
                     list = "Seznam",
@@ -1012,6 +1015,11 @@ Locales["cz"] = {
                     BlockWhenDead = "Blokovat při smrti nebo bezvědomí",
                     BlockWhenCuffed = "Blokovat v poutech",
                     RequirePhoneItem = "Vyžadovat telefon pro vysílačku",
+                },
+                radioHudLabels = {
+                    AlwaysShowMembers = "Vždy zobrazit členy kanálu",
+                    PrimaryTalkColor = "Barva mluvení na hlavní frekvenci",
+                    SecondaryTalkColor = "Barva mluvení na vedlejší frekvenci",
                 },
             },
             players = {

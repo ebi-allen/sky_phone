@@ -909,6 +909,9 @@ Locales["rs"] = {
                     phoneBlockWhenDead = "Podrazumevano uključeno. Blokira telefon i završava pozive, prenose i obe radio-frekvencije tokom smrti, nesvesti ili laststand stanja. Koristi ESX/Qbox/QBCore status i izvorne provere smrti.",
                     phoneBlockWhenCuffed = "Podrazumevano uključeno. Blokira telefon i završava pozive, prenose i radio dok je igrač vezan lisicama. Koristi status frameworka i izvorne provere lisica.",
                     radioRequirePhoneItem = "Подразумевано укључено. Захтева Phone.Item при уласку или аутоматском повратку на радио. Проверава само повезане кориснике једном у секунди; губитак последњег телефона искључује обе фреквенције чак и када је телефон затворен. Искључи за радио без телефона.",
+                    radioHudAlwaysShowMembers = "Искључено приказује само оне који говоре, а затим их задржава током времена задршке. Укључено задржава сваког повезаног члана док не напусти канал. Они који говоре остају истакнути, а време задршке их не скрива. Преклоп остаје скривен када је HUD искључен.",
+                    radioHudPrimaryTalkColor = "Боја док члан говори на главној фреквенцији. Унеси #RRGGBB. Чланови који не говоре остају светлосиви.",
+                    radioHudSecondaryTalkColor = "Боја док члан говори на помоћној фреквенцији. Унеси #RRGGBB. Чланови који не говоре остају светлосиви.",
                 },
                 table = {
                     list = "Листа",
@@ -1012,6 +1015,11 @@ Locales["rs"] = {
                     BlockWhenDead = "Блокирај при смрти или несвести",
                     BlockWhenCuffed = "Блокирај са лисицама",
                     RequirePhoneItem = "Захтевај телефон за радио",
+                },
+                radioHudLabels = {
+                    AlwaysShowMembers = "Увек приказуј чланове канала",
+                    PrimaryTalkColor = "Боја говора на главној фреквенцији",
+                    SecondaryTalkColor = "Боја говора на помоћној фреквенцији",
                 },
             },
             players = {

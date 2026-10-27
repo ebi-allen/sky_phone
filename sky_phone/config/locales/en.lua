@@ -909,6 +909,9 @@ Locales["en"] = {
                     phoneBlockWhenDead = "Enabled by default. Blocks phone use and ends calls, broadcasts and both radio frequencies while dead, unconscious or in laststand. Uses ESX/Qbox/QBCore status and native death checks. Disable to allow use in these states.",
                     phoneBlockWhenCuffed = "Enabled by default. Blocks phone use and ends calls, broadcasts and radio while handcuffed. Uses framework status and native handcuff checks.",
                     radioRequirePhoneItem = "Enabled by default. Requires Phone.Item when joining or automatically rejoining radio. Only connected radio users are checked once per second; losing the last phone disconnects both frequencies even with the phone closed. Disable to allow radio without a phone item.",
+                    radioHudAlwaysShowMembers = "Off shows only members who are talking, then keeps them for the speaker persist time. On keeps every connected member until they leave the channel. Talking members stay highlighted, and the persist time does not hide them. The overlay stays hidden while HUD Enabled is off.",
+                    radioHudPrimaryTalkColor = "Color shown while a member talks on the primary frequency. Enter #RRGGBB. Members who are not talking stay light gray.",
+                    radioHudSecondaryTalkColor = "Color shown while a member talks on the secondary frequency. Enter #RRGGBB. Members who are not talking stay light gray.",
                 },
                 table = {
                     list = "List",
@@ -1012,6 +1015,11 @@ Locales["en"] = {
                     BlockWhenDead = "Block while dead or unconscious",
                     BlockWhenCuffed = "Block while handcuffed",
                     RequirePhoneItem = "Require a phone item for radio",
+                },
+                radioHudLabels = {
+                    AlwaysShowMembers = "Always show channel members",
+                    PrimaryTalkColor = "Primary talking color",
+                    SecondaryTalkColor = "Secondary talking color",
                 },
             },
             players = {

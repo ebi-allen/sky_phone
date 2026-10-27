@@ -909,6 +909,9 @@ Locales["cn"] = {
                     phoneBlockWhenDead = "默认启用。死亡、昏迷或处于 laststand 状态时阻止使用手机，并结束通话、直播和两个对讲机频率。使用 ESX/Qbox/QBCore 状态和原生死亡检测。",
                     phoneBlockWhenCuffed = "默认启用。被戴上手铐时阻止使用手机，并结束通话、直播和对讲机连接。使用框架状态和原生手铐检测。",
                     radioRequirePhoneItem = "默认启用。加入或自动重新加入对讲机时需要 Phone.Item。每秒只检查已连接的对讲机用户；失去最后一部手机会断开两个频率，即使手机界面已关闭。禁用后允许无手机物品使用对讲机。",
+                    radioHudAlwaysShowMembers = "关闭时只显示正在说话的成员，并在说话残留时间内保留。开启时，每个已连接成员会一直保留到离开频道。正在说话的成员保持高亮，残留时间不会把他们隐藏。HUD 启用关闭时，整个叠加层保持隐藏。",
+                    radioHudPrimaryTalkColor = "成员在主频率说话时的颜色。请输入 #RRGGBB。未说话的成员保持浅灰色。",
+                    radioHudSecondaryTalkColor = "成员在副频率说话时的颜色。请输入 #RRGGBB。未说话的成员保持浅灰色。",
                 },
                 table = {
                     list = "列表",
@@ -1012,6 +1015,11 @@ Locales["cn"] = {
                     BlockWhenDead = "死亡或昏迷时禁用",
                     BlockWhenCuffed = "戴手铐时禁用",
                     RequirePhoneItem = "对讲机需要手机物品",
+                },
+                radioHudLabels = {
+                    AlwaysShowMembers = "始终显示频道成员",
+                    PrimaryTalkColor = "主频率说话颜色",
+                    SecondaryTalkColor = "副频率说话颜色",
                 },
             },
             players = {

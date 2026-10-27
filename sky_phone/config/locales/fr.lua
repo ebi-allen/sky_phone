@@ -909,6 +909,9 @@ Locales["fr"] = {
                     phoneBlockWhenDead = "Activé par défaut. Bloque le téléphone et termine les appels, directs et deux fréquences radio en cas de mort, inconscience ou laststand. Utilise les états ESX/Qbox/QBCore et les vérifications natives de mort.",
                     phoneBlockWhenCuffed = "Activé par défaut. Bloque le téléphone et termine appels, directs et radio lorsque le joueur est menotté. Utilise les états du framework et les vérifications natives des menottes.",
                     radioRequirePhoneItem = "Activé par défaut. Exige Phone.Item lors de la connexion ou reconnexion automatique à la radio. Seuls les utilisateurs connectés sont vérifiés une fois par seconde ; perdre le dernier téléphone déconnecte les deux fréquences, même téléphone fermé. Désactivez pour autoriser la radio sans téléphone.",
+                    radioHudAlwaysShowMembers = "Désactivé, seuls les membres qui parlent apparaissent, puis restent pendant la durée de maintien. Activé, chaque membre connecté reste jusqu'à son départ du canal. Les membres qui parlent restent mis en évidence, et la durée de maintien ne les masque pas. L'incrustation reste cachée lorsque le HUD est désactivé.",
+                    radioHudPrimaryTalkColor = "Couleur affichée pendant qu’un membre parle sur la fréquence principale. Saisir #RRGGBB. Les membres qui ne parlent pas restent gris clair.",
+                    radioHudSecondaryTalkColor = "Couleur affichée pendant qu’un membre parle sur la fréquence secondaire. Saisir #RRGGBB. Les membres qui ne parlent pas restent gris clair.",
                 },
                 table = {
                     list = "Liste",
@@ -1012,6 +1015,11 @@ Locales["fr"] = {
                     BlockWhenDead = "Bloquer en cas de mort ou d'inconscience",
                     BlockWhenCuffed = "Bloquer lorsque menotté",
                     RequirePhoneItem = "Exiger un téléphone pour la radio",
+                },
+                radioHudLabels = {
+                    AlwaysShowMembers = "Toujours afficher les membres du canal",
+                    PrimaryTalkColor = "Couleur de parole de la fréquence principale",
+                    SecondaryTalkColor = "Couleur de parole de la fréquence secondaire",
                 },
             },
             players = {

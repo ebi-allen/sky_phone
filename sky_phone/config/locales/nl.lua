@@ -909,6 +909,9 @@ Locales["nl"] = {
                     phoneBlockWhenDead = "Standaard ingeschakeld. Blokkeert de telefoon en beëindigt oproepen, livestreams en beide radiofrequenties bij dood, bewusteloosheid of laststand. Gebruikt ESX/Qbox/QBCore-status en native doodcontroles.",
                     phoneBlockWhenCuffed = "Standaard ingeschakeld. Blokkeert de telefoon en beëindigt oproepen, livestreams en radio bij handboeien. Gebruikt frameworkstatus en native handboeiencontroles.",
                     radioRequirePhoneItem = "Standaard ingeschakeld. Vereist Phone.Item bij verbinding of automatische herverbinding met de radio. Alleen verbonden gebruikers worden eenmaal per seconde gecontroleerd; verlies van de laatste telefoon verbreekt beide frequenties, ook met gesloten telefoon. Uitschakelen staat radio zonder telefoon toe.",
+                    radioHudAlwaysShowMembers = "Uit toont alleen leden die spreken en houdt ze daarna vast gedurende de nalooptijd. Aan houdt elk verbonden lid tot dit lid het kanaal verlaat. Sprekende leden blijven gemarkeerd en de nalooptijd verbergt hen niet. De overlay blijft verborgen wanneer de HUD uit staat.",
+                    radioHudPrimaryTalkColor = "Kleur terwijl een lid op de hoofdfrequentie spreekt. Voer #RRGGBB in. Leden die niet spreken blijven lichtgrijs.",
+                    radioHudSecondaryTalkColor = "Kleur terwijl een lid op de tweede frequentie spreekt. Voer #RRGGBB in. Leden die niet spreken blijven lichtgrijs.",
                 },
                 table = {
                     list = "Lijst",
@@ -1012,6 +1015,11 @@ Locales["nl"] = {
                     BlockWhenDead = "Blokkeren bij dood of bewusteloosheid",
                     BlockWhenCuffed = "Blokkeren wanneer geboeid",
                     RequirePhoneItem = "Telefoon vereisen voor de radio",
+                },
+                radioHudLabels = {
+                    AlwaysShowMembers = "Kanaalleden altijd tonen",
+                    PrimaryTalkColor = "Spreekkleur van de hoofdfrequentie",
+                    SecondaryTalkColor = "Spreekkleur van de tweede frequentie",
                 },
             },
             players = {

@@ -6,7 +6,17 @@ import type { RadioHudConfig, RadioHudMember } from '@/types/radio'
 import { isTrustedRootMessageSource } from '@/utils/windowMessages'
 
 type RadioHudEntry = RadioHudMember & {
-  state: 'recent' | 'talking'
+  state: 'idle' | 'recent' | 'talking'
+}
+
+const DEFAULT_PRIMARY_TALK_COLOR = '#4ade80'
+const DEFAULT_SECONDARY_TALK_COLOR = '#facc15'
+const TALK_COLOR_PATTERN = /^#[\da-f]{6}$/i
+
+function talkColor(value: unknown, fallback: string): string {
+  return typeof value === 'string' && TALK_COLOR_PATTERN.test(value)
+    ? value
+    : fallback
 }
 
 type RadioHudMessage = {
@@ -15,9 +25,12 @@ type RadioHudMessage = {
 }
 
 const config = reactive<RadioHudConfig>({
+  alwaysShowMembers: false,
   enabled: false,
   horizontal: 'right',
   horizontalOffset: 2,
+  primaryTalkColor: DEFAULT_PRIMARY_TALK_COLOR,
+  secondaryTalkColor: DEFAULT_SECONDARY_TALK_COLOR,
   speakerPersistMilliseconds: 3000,
   vertical: 'top',
   verticalOffset: 30,
@@ -31,6 +44,8 @@ const visibleEntries = computed(() =>
 )
 const positionStyle = computed(() => ({
   '--radio-hud-horizontal-offset': `${config.horizontalOffset}vh`,
+  '--radio-hud-primary': config.primaryTalkColor,
+  '--radio-hud-secondary': config.secondaryTalkColor,
   '--radio-hud-vertical-offset': `${config.verticalOffset}vh`,
 }))
 
@@ -90,11 +105,16 @@ function updateMembers(members: RadioHudMember[]): void {
     if (normalized.talking) {
       clearRemovalTimer(member.id)
       setEntry({ ...normalized, state: 'talking' })
+    } else if (config.alwaysShowMembers) {
+      clearRemovalTimer(member.id)
+      setEntry({ ...normalized, state: 'idle' })
     } else if (existing?.state === 'talking') {
       setEntry({ ...normalized, state: 'recent' })
       scheduleRemoval(member.id)
-    } else if (existing) {
-      setEntry({ ...normalized, state: existing.state })
+    } else if (existing?.state === 'recent') {
+      setEntry({ ...normalized, state: 'recent' })
+    } else {
+      removeEntry(member.id)
     }
   }
 
@@ -119,7 +139,24 @@ function updateConfig(value: Partial<RadioHudConfig>): void {
     0,
     Math.min(10_000, Number(value.speakerPersistMilliseconds) || 0),
   )
-  if (!config.enabled) clearEntries()
+  config.alwaysShowMembers = value.alwaysShowMembers === true
+  config.primaryTalkColor = talkColor(
+    value.primaryTalkColor,
+    DEFAULT_PRIMARY_TALK_COLOR,
+  )
+  config.secondaryTalkColor = talkColor(
+    value.secondaryTalkColor,
+    DEFAULT_SECONDARY_TALK_COLOR,
+  )
+  if (!config.enabled) {
+    clearEntries()
+    return
+  }
+  if (!config.alwaysShowMembers) {
+    for (const [id, entry] of [...entries.value]) {
+      if (entry.state === 'idle') removeEntry(id)
+    }
+  }
 }
 
 function onMessage(event: MessageEvent<RadioHudMessage>): void {
@@ -139,9 +176,12 @@ onMounted(() => {
     new URLSearchParams(window.location.search).has('radioHudPreview')
   ) {
     updateConfig({
+      alwaysShowMembers: true,
       enabled: true,
       horizontal: 'right',
       horizontalOffset: 2,
+      primaryTalkColor: DEFAULT_PRIMARY_TALK_COLOR,
+      secondaryTalkColor: DEFAULT_SECONDARY_TALK_COLOR,
       speakerPersistMilliseconds: 3000,
       vertical: 'top',
       verticalOffset: 30,
@@ -160,6 +200,13 @@ onMounted(() => {
         id: 12,
         name: 'Unit 12',
         talking: true,
+      },
+      {
+        badge: '4',
+        channel: 1,
+        id: 4,
+        name: 'Unit 4',
+        talking: false,
       },
     ])
   }
@@ -191,7 +238,10 @@ onBeforeUnmount(() => {
         class="radio-hud__member"
         :class="[
           `radio-hud__member--${entry.state}`,
-          { 'radio-hud__member--secondary': entry.channel === 2 },
+          {
+            'radio-hud__member--secondary':
+              entry.channel === 2 && entry.state === 'talking',
+          },
         ]"
       >
         <Headphones class="radio-hud__icon" aria-hidden="true" />
@@ -251,7 +301,7 @@ onBeforeUnmount(() => {
   max-width: 32vw;
   align-items: center;
   gap: 0.7vh;
-  color: #4ade80;
+  color: var(--radio-hud-primary, #4ade80);
   font-size: clamp(12px, 1.25vh, 16px);
   font-weight: 700;
   line-height: 1;
@@ -259,11 +309,12 @@ onBeforeUnmount(() => {
 }
 
 .radio-hud__member--secondary {
-  color: #facc15;
+  color: var(--radio-hud-secondary, #facc15);
 }
 
+.radio-hud__member--idle,
 .radio-hud__member--recent {
-  color: rgb(255 255 255 / 90%);
+  color: rgb(214 214 214 / 82%);
 }
 
 .radio-hud__icon {
@@ -275,6 +326,7 @@ onBeforeUnmount(() => {
   filter: drop-shadow(0 0 6px currentColor);
 }
 
+.radio-hud__member--idle .radio-hud__icon,
 .radio-hud__member--recent .radio-hud__icon {
   animation: none;
   filter: none;

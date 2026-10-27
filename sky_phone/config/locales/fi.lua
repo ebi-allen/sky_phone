@@ -909,6 +909,9 @@ Locales["fi"] = {
                     phoneBlockWhenDead = "Oletuksena käytössä. Estää puhelimen käytön ja lopettaa puhelut, lähetykset ja molemmat radiotaajuudet kuolleena, tajuttomana tai laststand-tilassa. Käyttää ESX/Qbox/QBCore-tilaa ja pelin kuolemantarkistuksia.",
                     phoneBlockWhenCuffed = "Oletuksena käytössä. Estää puhelimen käytön ja lopettaa puhelut, lähetykset ja radion käsiraudoissa. Käyttää frameworkin tilaa ja pelin käsirautatarkistuksia.",
                     radioRequirePhoneItem = "Oletuksena käytössä. Vaatii Phone.Item-esineen radioon liityttäessä tai automaattisesti uudelleenliityttäessä. Vain yhdistetyt käyttäjät tarkistetaan kerran sekunnissa; viimeisen puhelimen menettäminen katkaisee molemmat taajuudet myös puhelimen ollessa suljettuna. Poista käytöstä salliaksesi radion ilman puhelinta.",
+                    radioHudAlwaysShowMembers = "Pois näyttää vain puhuvat jäsenet ja pitää heidät sitten jäljelläoloajan. Päällä pitää jokaisen yhdistetyn jäsenen, kunnes hän poistuu kanavalta. Puhuvat pysyvät korostettuina, eikä jäljelläoloaika piilota heitä. Peitto pysyy piilossa, kun HUD on pois käytöstä.",
+                    radioHudPrimaryTalkColor = "Väri, kun jäsen puhuu ensisijaisella taajuudella. Kirjoita #RRGGBB. Jäsenet, jotka eivät puhu, pysyvät vaaleanharmaina.",
+                    radioHudSecondaryTalkColor = "Väri, kun jäsen puhuu toissijaisella taajuudella. Kirjoita #RRGGBB. Jäsenet, jotka eivät puhu, pysyvät vaaleanharmaina.",
                 },
                 table = {
                     list = "Lista",
@@ -1012,6 +1015,11 @@ Locales["fi"] = {
                     BlockWhenDead = "Estä kuolleena tai tajuttomana",
                     BlockWhenCuffed = "Estä käsiraudoissa",
                     RequirePhoneItem = "Vaadi puhelin radiota varten",
+                },
+                radioHudLabels = {
+                    AlwaysShowMembers = "Näytä kanavan jäsenet aina",
+                    PrimaryTalkColor = "Puheväri ensisijaisella taajuudella",
+                    SecondaryTalkColor = "Puheväri toissijaisella taajuudella",
                 },
             },
             players = {

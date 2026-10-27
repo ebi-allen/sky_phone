@@ -247,3 +247,15 @@ it('explains the independent default-on player and radio restrictions', () => {
     'radioRequirePhoneItem',
   )
 })
+
+it('explains the radio HUD roster and talking colors', () => {
+  expect(configuratorDescriptionKey('Radio.Hud.AlwaysShowMembers', false)).toBe(
+    'radioHudAlwaysShowMembers',
+  )
+  expect(
+    configuratorDescriptionKey('Radio.Hud.PrimaryTalkColor', '#4ade80'),
+  ).toBe('radioHudPrimaryTalkColor')
+  expect(
+    configuratorDescriptionKey('Radio.Hud.SecondaryTalkColor', '#facc15'),
+  ).toBe('radioHudSecondaryTalkColor')
+})

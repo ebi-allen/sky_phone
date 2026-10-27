@@ -1,6 +1,7 @@
 local current_volume = math.max(0, math.min(100, tonumber(Config.Radio.DefaultVolume) or 50))
 local current_primary = 0
 local current_secondary = 0
+local connection_version = 0
 local radio_settings = {
     autoRejoin = Config.Radio.AutoRejoin,
     notifications = Config.Radio.Notifications,
@@ -8,16 +9,28 @@ local radio_settings = {
 local auto_rejoin_pending = false
 local hud_members = { [1] = {}, [2] = {} }
 local hud_talking = {}
+-- Member snapshots can arrive while a join callback is still assigning the frequency.
+local pending_members = {}
+
+local function hud_color(value, fallback)
+    if type(value) == "string" and value:match("^#%x%x%x%x%x%x$") then
+        return value
+    end
+    return fallback
+end
 
 local function get_hud_config()
     local hud = type(Config.Radio.Hud) == "table" and Config.Radio.Hud or {}
     local position = type(hud.Position) == "table" and hud.Position or {}
     return {
         enabled = hud.Enabled == true,
+        alwaysShowMembers = hud.AlwaysShowMembers == true,
         horizontal = position.Horizontal == "left" and "left" or "right",
         vertical = position.Vertical == "bottom" and "bottom" or "top",
         horizontalOffset = math.max(0.0, math.min(100.0, tonumber(position.HorizontalOffset) or 2.0)),
         verticalOffset = math.max(0.0, math.min(100.0, tonumber(position.VerticalOffset) or 30.0)),
+        primaryTalkColor = hud_color(hud.PrimaryTalkColor, "#4ade80"),
+        secondaryTalkColor = hud_color(hud.SecondaryTalkColor, "#facc15"),
         speakerPersistMilliseconds = math.max(
             0,
             math.min(10000, math.floor(tonumber(hud.SpeakerPersistMilliseconds) or 3000))
@@ -28,10 +41,6 @@ end
 local function send_hud_config()
     SendNUIMessage({ type = "radio:hud-config", data = get_hud_config() })
 end
-
-AddEventHandler("sky_phone:configurator:updated", function()
-    send_hud_config()
-end)
 
 local function send_hud_members()
     local combined = {}
@@ -92,6 +101,86 @@ local function set_hud_talking(player_id, state, channel_id)
     send_hud_members()
 end
 
+-- SaltyChat writes the current transmitters to GlobalState, keyed by channel name.
+-- The value replaces the previous sender list; it does not depend on the radio key.
+local salty_sender_cookies = {}
+local salty_talking = { [1] = {}, [2] = {} }
+
+local function salty_sender_key(frequency)
+    return ("SaltyChat_RadioChannelSender:%s"):format(frequency)
+end
+
+local function remove_salty_sender_watches()
+    for _, cookie in pairs(salty_sender_cookies) do
+        if cookie then
+            RemoveStateBagChangeHandler(cookie)
+        end
+    end
+    salty_sender_cookies = {}
+    salty_talking = { [1] = {}, [2] = {} }
+end
+
+local function apply_salty_senders(channel_id, value)
+    if Bridge.Radio.GetProvider() ~= "saltychat" or current_primary <= 0 then
+        return
+    end
+    local active = {}
+    if type(value) == "table" then
+        for _, sender in pairs(value) do
+            if type(sender) == "table" then
+                local sender_id = tonumber(sender.ServerId)
+                if sender_id and sender_id > 0 then
+                    active[sender_id] = true
+                end
+            end
+        end
+    end
+    local other_channel = channel_id == 1 and 2 or 1
+    for player_id in pairs(salty_talking[channel_id]) do
+        if not active[player_id] then
+            if salty_talking[other_channel][player_id] then
+                set_hud_talking(player_id, true, other_channel)
+            else
+                set_hud_talking(player_id, false, channel_id)
+            end
+        end
+    end
+    for player_id in pairs(active) do
+        set_hud_talking(player_id, true, channel_id)
+    end
+    salty_talking[channel_id] = active
+end
+
+local function watch_salty_sender(channel_id, frequency)
+    local key = salty_sender_key(frequency)
+    salty_sender_cookies[channel_id] = AddStateBagChangeHandler(key, "global", function(_, changed_key, value)
+        if changed_key ~= key then
+            return
+        end
+        apply_salty_senders(channel_id, value)
+    end)
+    apply_salty_senders(channel_id, GlobalState[key])
+end
+
+local function refresh_salty_sender_watches()
+    local previous = { salty_talking[1], salty_talking[2] }
+    remove_salty_sender_watches()
+    if Bridge.Radio.GetProvider() ~= "saltychat" or current_primary <= 0 then
+        for channel_id = 1, 2 do
+            for player_id in pairs(previous[channel_id]) do
+                set_hud_talking(player_id, false, channel_id)
+            end
+        end
+        return
+    end
+    hud_talking = {}
+    watch_salty_sender(1, current_primary)
+    if current_secondary > 0 and current_secondary ~= current_primary then
+        watch_salty_sender(2, current_secondary)
+    end
+    send_hud_members()
+end
+
 local function request(name, data)
     local result = Bridge.Callbacks.Trigger("sky_phone:radio:" .. name, data or {})
     if type(result) ~= "table" then
@@ -99,6 +188,38 @@ local function request(name, data)
     end
     return result
 end
+
+local function flush_pending_members()
+    local pending = pending_members
+    pending_members = {}
+    for frequency, members in pairs(pending) do
+        local channel_id = frequency == current_primary and 1 or frequency == current_secondary and 2 or nil
+        if channel_id then
+            set_hud_members(channel_id, members)
+        end
+    end
+end
+
+AddEventHandler("sky_phone:configurator:updated", function()
+    send_hud_config()
+    if current_primary > 0 then
+        local version, primary, secondary = connection_version, current_primary, current_secondary
+        local result = request("get")
+        if version ~= connection_version or primary ~= current_primary or secondary ~= current_secondary then
+            return
+        end
+        if result.success and type(result.data) == "table" then
+            if type(result.data.members) == "table" then
+                set_hud_members(1, result.data.members)
+            end
+            if current_secondary > 0 and type(result.data.secondaryMembers) == "table" then
+                set_hud_members(2, result.data.secondaryMembers)
+            end
+            return
+        end
+    end
+    send_hud_members()
+end)
 
 local function apply_server_state(data)
     if type(data) ~= "table" then
@@ -112,13 +233,14 @@ local function apply_server_state(data)
     end
 end
 
-local connection_version = 0
 local provider_joining = false
 local function reset_radio(reason)
     connection_version = connection_version + 1
     -- Zero state before calling exports: Yaca emits frequency events on leave.
     current_primary, current_secondary = 0, 0
     Bridge.Radio.Leave()
+    pending_members = {}
+    remove_salty_sender_watches()
     clear_hud_members()
     SendNUIMessage({ type = "radio:disconnected", data = { reason = reason } })
 end
@@ -172,6 +294,11 @@ local function join_radio(primary, secondary)
     end
     current_primary = approved_primary
     current_secondary = approved_secondary
+    flush_pending_members()
+    if approved_primary > 0 and type(data.members) == "table" then
+        set_hud_members(1, data.members)
+    end
+    refresh_salty_sender_watches()
     Bridge.Radio.SetVolume(current_volume)
     data.secondaryFrequency = approved_secondary
     data.provider = Bridge.Radio.GetProvider()
@@ -189,6 +316,8 @@ local function leave_radio()
     current_primary = 0
     current_secondary = 0
     Bridge.Radio.Leave()
+    pending_members = {}
+    remove_salty_sender_watches()
     clear_hud_members()
     return request("disconnect")
 end
@@ -208,6 +337,7 @@ AddEventHandler("sky_phone:client:radioProviderUpdated", function()
     end
 
     Bridge.Radio.SetVolume(current_volume)
+    refresh_salty_sender_watches()
 end)
 
 RegisterNUICallback("radio:get", function(data, cb)
@@ -228,6 +358,7 @@ RegisterNUICallback("radio:get", function(data, cb)
         if result.data.speakerSupported and Bridge.Radio.GetSpeaker() ~= result.data.speakerEnabled then
             Bridge.Radio.SetSpeaker(result.data.speakerEnabled)
         end
+        result.data.secondaryMembers = nil
     elseif result.success then
         result = { success = false, error = "request_failed" }
     end
@@ -312,10 +443,15 @@ RegisterNetEvent("sky_phone:radio:members", function(data)
         return
     end
     local frequency = tonumber(data.frequency)
-    local channel_id = frequency == current_primary and 1 or frequency == current_secondary and 2 or nil
-    if not channel_id then
+    if not frequency or frequency <= 0 then
         return
     end
+    local channel_id = frequency == current_primary and 1 or frequency == current_secondary and 2 or nil
+    if not channel_id then
+        pending_members[frequency] = data.members
+        return
+    end
+    pending_members[frequency] = nil
     set_hud_members(channel_id, data.members)
     if channel_id == 1 then
         SendNUIMessage({ type = "radio:updated", data = data })
@@ -340,6 +476,22 @@ RegisterNetEvent("yaca:external:isRadioEnabled", function(state)
     if Bridge.Radio.GetProvider() == "yaca" and not state then
         clear_hud_members()
     end
+end)
+
+-- pma-voice notifies the speaker locally and everyone else over the net.
+-- The sender is excluded from setTalkingOnRadio, so radioActive is required.
+AddEventHandler("pma-voice:radioActive", function(talking)
+    if Bridge.Radio.GetProvider() ~= "pma" or current_primary <= 0 then
+        return
+    end
+    set_hud_talking(GetPlayerServerId(PlayerId()), talking == true, 1)
+end)
+
+RegisterNetEvent("pma-voice:setTalkingOnRadio", function(player_id, talking)
+    if Bridge.Radio.GetProvider() ~= "pma" or current_primary <= 0 then
+        return
+    end
+    set_hud_talking(player_id, talking == true, 1)
 end)
 
 AddEventHandler("sky_phone:client:nuiReady", function()
@@ -404,6 +556,7 @@ RegisterNetEvent("yaca:external:setRadioFrequency", function(channel, frequency)
         or (channel_id == 2 and value == current_secondary) then return end
     if channel_id == 1 then
         hud_members[1] = {}
+        pending_members = {}
         current_primary = value
         if value == 0 then
             current_secondary = 0
@@ -416,6 +569,7 @@ RegisterNetEvent("yaca:external:setRadioFrequency", function(channel, frequency)
         end
     elseif channel_id == 2 then
         hud_members[2] = {}
+        pending_members = {}
         current_secondary = value == current_primary and 0 or value
         if current_primary > 0 then
             local result = request("connect", { frequency = current_primary, secondaryFrequency = current_secondary })
