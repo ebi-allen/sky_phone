@@ -2969,7 +2969,7 @@ onBeforeUnmount(() => {
   min-height: 44px;
   height: max(44px, calc(40 * var(--admin-unit)));
   padding: 0 calc(8 * var(--admin-unit));
-  color: var(--admin-text);
+  color: #fff;
   font-size: max(12px, calc(11 * var(--admin-unit)));
 }
 
