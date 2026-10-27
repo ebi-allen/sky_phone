@@ -902,6 +902,9 @@ Locales["ja"] = {
                     phoneBlockWhenDead = "既定で有効です。死亡、意識不明、laststandの間はスマホの使用を止め、通話、配信、両方の無線周波数を終了します。ESX、Qbox、QBCoreの状態と、ネイティブの死亡判定を使います。これらの状態でも使うには、無効にしてください。",
                     phoneBlockWhenCuffed = "既定で有効です。手錠をかけられている間はスマホの使用を止め、通話、配信、無線を終了します。フレームワークの状態と、ネイティブの手錠判定を使います。",
                     radioRequirePhoneItem = "既定で有効です。無線への参加、または自動での再参加時にPhone.Itemを要求します。接続中の無線ユーザーだけを、毎秒いちど確認します。最後のスマホが無くなると、スマホを閉じた状態でも両方の周波数が切断されます。スマホアイテムなしで無線を許可するには、無効にしてください。",
+                    radioHudAlwaysShowMembers = "オフのときは話しているメンバーだけを表示し、その後は話者の残留時間だけ残します。オンのときは接続中のメンバーを、チャンネルから離れるまで残します。話しているメンバーは強調されたままで、残留時間では消えません。HUDの有効がオフのときは、オーバーレイ自体を出しません。",
+                    radioHudPrimaryTalkColor = "主周波数で話しているあいだの色です。#RRGGBB で入力します。話していないメンバーは薄いグレーのままです。",
+                    radioHudSecondaryTalkColor = "副周波数で話しているあいだの色です。#RRGGBB で入力します。話していないメンバーは薄いグレーのままです。",
                 },
                 table = {
                     list = "リスト",
@@ -1005,6 +1008,11 @@ Locales["ja"] = {
                     BlockWhenDead = "死亡中または意識不明のときブロック",
                     BlockWhenCuffed = "手錠中はブロック",
                     RequirePhoneItem = "無線にスマホアイテムが必要",
+                },
+                radioHudLabels = {
+                    AlwaysShowMembers = "チャンネルメンバーを常時表示",
+                    PrimaryTalkColor = "主周波数の発話色",
+                    SecondaryTalkColor = "副周波数の発話色",
                 },
             },
             players = {

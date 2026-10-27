@@ -941,6 +941,45 @@ test("player restrictions and radio item requirement default on, persist false a
     assert(not restarted.save({ change("Radio", radio) }).success)
 end)
 
+test("radio HUD roster and talking colors default off, persist valid values and reject bad colors", function()
+    local server = new_server()
+    local hud = server.env.Config.Radio.Hud
+    assert(hud.AlwaysShowMembers == false)
+    assert(hud.PrimaryTalkColor == "#4ade80" and hud.SecondaryTalkColor == "#facc15")
+    local radio = server.field("Radio").value
+    radio.Hud.AlwaysShowMembers = true
+    radio.Hud.PrimaryTalkColor = "#FF00AA"
+    radio.Hud.SecondaryTalkColor = "#112233"
+    local result = server.save({ change("Radio", radio) })
+    assert(result.success, tostring(result.error))
+    local restarted = new_server(server.database)
+    local client = new_client(restarted)
+    assert(client.config.Radio.Hud.AlwaysShowMembers == true)
+    assert(client.config.Radio.Hud.PrimaryTalkColor == "#FF00AA")
+    assert(client.config.Radio.Hud.SecondaryTalkColor == "#112233")
+    local writes = restarted.database.writes
+    for _, invalid in ipairs({ "#fff", "red", "", "#11223344" }) do
+        local bad = restarted.field("Radio").value
+        bad.Hud.PrimaryTalkColor = invalid
+        assert(not restarted.save({ change("Radio", bad) }).success, invalid)
+        bad = restarted.field("Radio").value
+        bad.Hud.SecondaryTalkColor = invalid
+        assert(not restarted.save({ change("Radio", bad) }).success, invalid)
+    end
+    local bad = restarted.field("Radio").value
+    bad.Hud.AlwaysShowMembers = "true"
+    assert(not restarted.save({ change("Radio", bad) }).success)
+    assert(restarted.database.writes == writes)
+    local stored = restarted.database.payloads[tonumber(restarted.database.row.config_payload)]
+    stored.Radio.Hud.AlwaysShowMembers = nil
+    stored.Radio.Hud.PrimaryTalkColor = nil
+    stored.Radio.Hud.SecondaryTalkColor = nil
+    local filled = new_server(restarted.database)
+    assert(filled.env.Config.Radio.Hud.AlwaysShowMembers == false)
+    assert(filled.env.Config.Radio.Hud.PrimaryTalkColor == "#4ade80")
+    assert(filled.env.Config.Radio.Hud.SecondaryTalkColor == "#facc15")
+end)
+
 test("existing SQL rows receive default-on restrictions without resetting other settings", function()
     local server = new_server()
     local stored = server.database.payloads[tonumber(server.database.row.config_payload)]

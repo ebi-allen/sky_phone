@@ -13,9 +13,12 @@ export type RadioMember = {
 }
 
 export type RadioHudConfig = {
+  alwaysShowMembers: boolean
   enabled: boolean
   horizontal: 'left' | 'right'
   horizontalOffset: number
+  primaryTalkColor: string
+  secondaryTalkColor: string
   speakerPersistMilliseconds: number
   vertical: 'bottom' | 'top'
   verticalOffset: number

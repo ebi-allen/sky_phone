@@ -1948,6 +1948,16 @@ function SkyPhoneConfigurator.Save(expected_revision, changes, actor_identifier,
     then
         return { success = false, error = "invalid_value" }
     end
+    local radio_hud = type(candidate_config.Radio) == "table" and candidate_config.Radio.Hud or nil
+    if type(radio_hud) ~= "table"
+        or type(radio_hud.AlwaysShowMembers) ~= "boolean"
+        or type(radio_hud.PrimaryTalkColor) ~= "string"
+        or not radio_hud.PrimaryTalkColor:match("^#%x%x%x%x%x%x$")
+        or type(radio_hud.SecondaryTalkColor) ~= "string"
+        or not radio_hud.SecondaryTalkColor:match("^#%x%x%x%x%x%x$")
+    then
+        return { success = false, error = "invalid_value" }
+    end
     if type(citywarn.CategoryColors) ~= "table" then
         return { success = false, error = "invalid_value" }
     end

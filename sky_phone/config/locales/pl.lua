@@ -902,6 +902,9 @@ Locales["pl"] = {
                     phoneBlockWhenDead = "Domyślnie włączone. Blokuje telefon oraz kończy połączenia, transmisje i obie częstotliwości radia przy śmierci, utracie przytomności lub laststand. Używa stanu ESX/Qbox/QBCore i natywnych kontroli śmierci.",
                     phoneBlockWhenCuffed = "Domyślnie włączone. Blokuje telefon oraz kończy połączenia, transmisje i radio podczas zakucia w kajdanki. Używa stanu frameworka i natywnych kontroli kajdanek.",
                     radioRequirePhoneItem = "Domyślnie włączone. Wymaga Phone.Item przy dołączaniu lub automatycznym powrocie do radia. Sprawdza tylko podłączonych użytkowników raz na sekundę; utrata ostatniego telefonu rozłącza obie częstotliwości nawet przy zamkniętym telefonie. Wyłącz, aby pozwolić na radio bez telefonu.",
+                    radioHudAlwaysShowMembers = "Wyłączone pokazuje tylko mówiących, a potem zatrzymuje ich przez czas utrzymania. Włączone zatrzymuje każdego połączonego członka, aż opuści kanał. Mówiący pozostają wyróżnieni, a czas utrzymania ich nie ukrywa. Nakładka pozostaje ukryta, gdy HUD jest wyłączony.",
+                    radioHudPrimaryTalkColor = "Kolor, gdy członek mówi na częstotliwości głównej. Wpisz #RRGGBB. Członkowie, którzy nie mówią, pozostają jasnoszarzy.",
+                    radioHudSecondaryTalkColor = "Kolor, gdy członek mówi na częstotliwości dodatkowej. Wpisz #RRGGBB. Członkowie, którzy nie mówią, pozostają jasnoszarzy.",
                 },
                 table = {
                     list = "Lista",
@@ -1005,6 +1008,11 @@ Locales["pl"] = {
                     BlockWhenDead = "Blokuj po śmierci lub utracie przytomności",
                     BlockWhenCuffed = "Blokuj w kajdankach",
                     RequirePhoneItem = "Wymagaj telefonu do radia",
+                },
+                radioHudLabels = {
+                    AlwaysShowMembers = "Zawsze pokazuj członków kanału",
+                    PrimaryTalkColor = "Kolor mówienia na częstotliwości głównej",
+                    SecondaryTalkColor = "Kolor mówienia na częstotliwości dodatkowej",
                 },
             },
             players = {

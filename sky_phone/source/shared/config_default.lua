@@ -343,6 +343,10 @@ Config.Radio = {
     },
     Hud = {
         Enabled = true,
+        -- true lists every connected member until they leave. SpeakerPersistMilliseconds applies only while this is false.
+        AlwaysShowMembers = false,
+        PrimaryTalkColor = "#4ade80", -- #RRGGBB while talking on the primary frequency
+        SecondaryTalkColor = "#facc15", -- #RRGGBB while talking on the secondary frequency
         SpeakerPersistMilliseconds = 3000,
         Position = {
             Horizontal = "right", -- left or right
