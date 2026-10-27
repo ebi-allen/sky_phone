@@ -2204,7 +2204,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### dompurify@3.4.16
+### dompurify@3.4.17
 
 Declared license: `(MPL-2.0 OR Apache-2.0)`
 
