@@ -234,6 +234,28 @@ test("early runtime requests wait for the stored configuration during resource s
     assert(server.runtime().revision == server.database.row.revision)
 end)
 
+test("TK Housing selection and automatic priority survive SQL and client sync", function()
+    local server = new_server()
+    local client = new_client(server)
+    local field = server.field("Housing")
+    assert(field.structure.fields.System.valueType == "string")
+    local priority = field.value.AutoPriority
+    assert(priority[#priority] == "tk_housing", "fresh defaults must discover TK Housing")
+    local settings = field.value
+    settings.System = "tk_housing"
+    table.insert(priority, 1, table.remove(priority))
+    local saved = server.save({ change("Housing", settings) })
+    assert(saved.success, saved.error)
+    client.sync(server.broadcasts[#server.broadcasts])
+    assert(client.config.Housing.System == "tk_housing")
+    assert(client.config.Housing.AutoPriority[1] == "tk_housing")
+    local restarted = new_server(server.database)
+    assert(restarted.env.Config.Housing.System == "tk_housing")
+    assert(#restarted.env.Config.Housing.AutoPriority == #priority)
+    assert(restarted.env.Config.Housing.AutoPriority[1] == "tk_housing")
+    assert(new_client(restarted).config.Housing.System == "tk_housing")
+end)
+
 test("phone control filters can be extended, shortened and cleared through SQL and connected client snapshots", function()
     local server = new_server()
     local client = new_client(server)
