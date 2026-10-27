@@ -155,6 +155,36 @@ assert(hud_has_member(refresh, 9), "Saving the configurator while connected must
 assert(hud_has_member(refresh, 10), "Saving the configurator while connected must reload the secondary roster")
 print("PASS radio HUD: early member events, connect payload and configurator refresh")
 
+for _, transition in ipairs({ "disconnect", "reconnect", "external_frequency" }) do
+    local stale = fixture()
+    assert(connect(stale).success)
+    stale.on_request = function(name)
+        if name == "sky_phone:radio:get" then coroutine.yield() end
+    end
+    stale.reply = function(name)
+        if name == "sky_phone:radio:get" then
+            return { success = true, data = {
+                frequency = 150, secondaryFrequency = 160,
+                members = { { id = 99, name = "Old channel member", badge = "" } },
+                secondaryMembers = {},
+            } }
+        end
+        return { success = true, data = { frequency = 170, secondaryFrequency = 0, members = {} } }
+    end
+    local refresh_task = coroutine.create(stale.events["sky_phone:configurator:updated"])
+    assert(coroutine.resume(refresh_task))
+    if transition == "external_frequency" then
+        stale.net["yaca:external:setRadioFrequency"](1, "170")
+    else
+        stale.net["sky_phone:radio:disconnected"]({ reason = "phone_not_owned" })
+        if transition == "reconnect" then assert(connect(stale).success) end
+    end
+    local resumed, error_message = coroutine.resume(refresh_task)
+    assert(resumed, error_message)
+    assert(not hud_has_member(stale, 99), "Late configurator refresh must not restore an old roster after " .. transition)
+end
+print("PASS radio HUD: stale configurator refresh cannot restore disconnected or switched channels")
+
 local function hud_member(state, id)
     for index = #state.messages, 1, -1 do
         local message = state.messages[index]
@@ -251,6 +281,12 @@ local secondary = state_handler(salty_secondary, "SaltyChat_RadioChannelSender:1
 assert(secondary, "SaltyChat must watch the secondary channel separately")
 secondary.fn("global", secondary.key, { { ServerId = 4 } })
 assert(hud_member(salty_secondary, 4).talking == true and hud_member(salty_secondary, 4).channel == 2)
+local overlapping_primary = state_handler(salty_secondary, "SaltyChat_RadioChannelSender:150")
+overlapping_primary.fn("global", overlapping_primary.key, { { ServerId = 4 } })
+assert(hud_member(salty_secondary, 4).channel == 1)
+overlapping_primary.fn("global", overlapping_primary.key, {})
+assert(hud_member(salty_secondary, 4).talking == true and hud_member(salty_secondary, 4).channel == 2,
+    "Ending primary transmission must retain the active secondary transmission color")
 print("PASS radio HUD: SaltyChat sender bags highlight primary and secondary transmitters")
 
 -- Public YACA v3.4.0 exports: apps/yaca-client/src/yaca/radio.ts.

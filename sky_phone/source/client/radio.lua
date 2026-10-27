@@ -1,6 +1,7 @@
 local current_volume = math.max(0, math.min(100, tonumber(Config.Radio.DefaultVolume) or 50))
 local current_primary = 0
 local current_secondary = 0
+local connection_version = 0
 local radio_settings = {
     autoRejoin = Config.Radio.AutoRejoin,
     notifications = Config.Radio.Notifications,
@@ -136,8 +137,12 @@ local function apply_salty_senders(channel_id, value)
     end
     local other_channel = channel_id == 1 and 2 or 1
     for player_id in pairs(salty_talking[channel_id]) do
-        if not active[player_id] and not salty_talking[other_channel][player_id] then
-            set_hud_talking(player_id, false, channel_id)
+        if not active[player_id] then
+            if salty_talking[other_channel][player_id] then
+                set_hud_talking(player_id, true, other_channel)
+            else
+                set_hud_talking(player_id, false, channel_id)
+            end
         end
     end
     for player_id in pairs(active) do
@@ -198,7 +203,11 @@ end
 AddEventHandler("sky_phone:configurator:updated", function()
     send_hud_config()
     if current_primary > 0 then
+        local version, primary, secondary = connection_version, current_primary, current_secondary
         local result = request("get")
+        if version ~= connection_version or primary ~= current_primary or secondary ~= current_secondary then
+            return
+        end
         if result.success and type(result.data) == "table" then
             if type(result.data.members) == "table" then
                 set_hud_members(1, result.data.members)
@@ -224,7 +233,6 @@ local function apply_server_state(data)
     end
 end
 
-local connection_version = 0
 local provider_joining = false
 local function reset_radio(reason)
     connection_version = connection_version + 1
